@@ -1,5 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox, ttk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -48,7 +49,7 @@ def refresh_treeview():
     for row in tree.get_children():
         tree.delete(row)
     for word in get_all_words():
-        tree.insert('', tk.END, values=(word.id, word.german_word, word.translation))
+        tree.insert('', 'end', values=(word.id, word.german_word, word.translation))
 
 def on_add():
     german_word = german_word_entry.get()
@@ -59,7 +60,7 @@ def on_add():
         german_word_entry.delete(0, tk.END)
         translation_entry.delete(0, tk.END)
     else:
-        messagebox.showerror("Error", "Both fields are required.")
+        ttk.Messagebox.show_error("Both fields are required.", "Error")
 
 def on_update():
     selected_item = tree.selection()[0]
@@ -72,7 +73,7 @@ def on_update():
         german_word_entry.delete(0, tk.END)
         translation_entry.delete(0, tk.END)
     else:
-        messagebox.showerror("Error", "Both fields are required.")
+        ttk.Messagebox.show_error("Both fields are required.", "Error")
 
 def on_delete():
     selected_item = tree.selection()[0]
@@ -86,7 +87,7 @@ def on_search():
     for row in tree.get_children():
         tree.delete(row)
     for word in results:
-        tree.insert('', tk.END, values=(word.id, word.german_word, word.translation))
+        tree.insert('', 'end', values=(word.id, word.german_word, word.translation))
 
 def on_select(event):
     selected_item = tree.selection()[0]
@@ -97,42 +98,51 @@ def on_select(event):
     translation_entry.insert(0, translation)
 
 # Создание графического интерфейса
-root = tk.Tk()
+root = ttk.Window(themename="darkly")
 root.title("Language Learning")
-root.geometry("600x400")
+root.geometry("800x600")
 
-frame = tk.Frame(root)
-frame.pack(pady=20)
+frame = ttk.Frame(root, padding=10)
+frame.pack(pady=20, fill=tk.BOTH, expand=True)
 
-tk.Label(frame, text="German Word:").grid(row=0, column=0, padx=10, pady=5)
-german_word_entry = tk.Entry(frame, width=30)
+ttk.Label(frame, text="German Word:", font=("Helvetica", 12)).grid(row=0, column=0, padx=10, pady=5)
+german_word_entry = ttk.Entry(frame, width=30, font=("Helvetica", 12))
 german_word_entry.grid(row=0, column=1, padx=10, pady=5)
 
-tk.Label(frame, text="Translation:").grid(row=1, column=0, padx=10, pady=5)
-translation_entry = tk.Entry(frame, width=30)
+ttk.Label(frame, text="Translation:", font=("Helvetica", 12)).grid(row=1, column=0, padx=10, pady=5)
+translation_entry = ttk.Entry(frame, width=30, font=("Helvetica", 12))
 translation_entry.grid(row=1, column=1, padx=10, pady=5)
 
-add_button = tk.Button(frame, text="Add Word", command=on_add)
-add_button.grid(row=2, column=0, padx=10, pady=5)
+button_frame = ttk.Frame(frame)
+button_frame.grid(row=2, column=0, columnspan=2, pady=10)
 
-update_button = tk.Button(frame, text="Update Word", command=on_update)
-update_button.grid(row=2, column=1, padx=10, pady=5)
+add_button = ttk.Button(button_frame, text="Add Word", command=on_add, bootstyle=SUCCESS)
+add_button.pack(side=tk.LEFT, padx=10)
 
-delete_button = tk.Button(frame, text="Delete Word", command=on_delete)
-delete_button.grid(row=2, column=2, padx=10, pady=5)
+update_button = ttk.Button(button_frame, text="Update Word", command=on_update, bootstyle=INFO)
+update_button.pack(side=tk.LEFT, padx=10)
 
-search_entry = tk.Entry(frame, width=30)
-search_entry.grid(row=3, column=0, padx=10, pady=5)
+delete_button = ttk.Button(button_frame, text="Delete Word", command=on_delete, bootstyle=DANGER)
+delete_button.pack(side=tk.LEFT, padx=10)
 
-search_button = tk.Button(frame, text="Search", command=on_search)
-search_button.grid(row=3, column=1, padx=10, pady=5)
+search_frame = ttk.Frame(frame)
+search_frame.grid(row=3, column=0, columnspan=2, pady=10)
+
+search_entry = ttk.Entry(search_frame, width=30, font=("Helvetica", 12))
+search_entry.pack(side=tk.LEFT, padx=10)
+
+search_button = ttk.Button(search_frame, text="Search", command=on_search, bootstyle=PRIMARY)
+search_button.pack(side=tk.LEFT, padx=10)
 
 columns = ('ID', 'German Word', 'Translation')
-tree = ttk.Treeview(root, columns=columns, show='headings')
+tree = ttk.Treeview(frame, columns=columns, show='headings', bootstyle=INFO)
 tree.heading('ID', text='ID')
 tree.heading('German Word', text='German Word')
 tree.heading('Translation', text='Translation')
-tree.pack(pady=20)
+tree.grid(row=4, column=0, columnspan=2, pady=20, sticky='nsew')
+
+frame.grid_rowconfigure(4, weight=1)
+frame.grid_columnconfigure(1, weight=1)
 
 tree.bind('<<TreeviewSelect>>', on_select)
 
